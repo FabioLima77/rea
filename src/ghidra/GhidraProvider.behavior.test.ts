@@ -516,6 +516,12 @@ describe("Ghidra Windows platform support", () => {
     });
     expect(
       ghidra.inspectTargetSupport(executableTarget("elf", "x86_64")),
+    ).toMatchObject({ status: "supported" });
+    expect(
+      ghidra.inspectTargetSupport(executableTarget("elf", "arm64")),
+    ).toMatchObject({ status: "supported" });
+    expect(
+      ghidra.inspectTargetSupport(executableTarget("mach-o", "x86_64")),
     ).toMatchObject({
       status: "unsupported",
       code: "target_format_unsupported",
@@ -621,6 +627,9 @@ describe("Windows Ghidra native failure diagnostics", () => {
       });
       expect(
         ghidra.inspectTargetSupport(executableTarget("elf", "x86_64")),
+      ).toMatchObject({ status: "supported" });
+      expect(
+        ghidra.inspectTargetSupport(executableTarget("mach-o", "x86_64")),
       ).toMatchObject({
         status: "unsupported",
         code: "target_format_unsupported",

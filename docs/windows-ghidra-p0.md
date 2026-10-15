@@ -17,8 +17,10 @@ additional permission flag or degraded mode is required.
 - Node.js 22.x (>=22.19), 24.x (>=24.11), or 26+;
 - an operator-installed Ghidra 12.1.x distribution (verified with 12.1.4);
 - a 64-bit full JDK inside that installation's declared Java range (JDK 21 or newer, with no maximum, for current 12.1 releases);
-- an explicit native, non-managed x86 or x86-64 PE application/DLL, or a
-  [raw NMOS 6502 image](raw-binary.md#nmos-6502) with a caller-supplied entry; and
+- an explicit native, non-managed x86 or x86-64 PE application/DLL, an x86,
+  x86-64, ARM or AArch64 ELF image such as an Android native library (`.so`),
+  or a [raw NMOS 6502 image](raw-binary.md#nmos-6502) with a caller-supplied
+  entry; and
 - the 26 read-only Ghidra inventory, memory, and function-analysis operations.
 
 Loaded memory reads and file offsets preserve Ghidra's observed source mappings.
@@ -26,7 +28,10 @@ PE load-image inspection returns an explicit unsupported attestation status.
 Independent verification covers admitted DOS MZ, explicit COM, and explicit
 [raw-binary imports](raw-binary.md) on their supported hosts, including the
 admitted raw NMOS 6502 mapping on Windows. Windows P0 admission remains limited
-to native PE and raw NMOS 6502 images. For x64 PE
+to native PE, x86/ARM ELF, and raw NMOS 6502 images. ELF images use Ghidra's
+default ELF loader on the same immutable snapshot; ELF has no PE-style
+application/DLL role, so admission depends on the machine type alone. Other
+ELF machines (MIPS, PowerPC, RISC-V) stay unsupported on Windows. For x64 PE
 NativeAOT RTR 9.1, the read-only snapshot parser can report metadata through
 `inspect_native_load_image` and `inspect_native_data_type` without a JAR or
 database mutation: MethodTable relationships, virtual slots and frozen strings.
@@ -135,7 +140,8 @@ and artifact SHA-256 before loading the package-owned addon. Native failure
 reasons remain distinct from a valid installation and an unsupported target.
 
 PE header classification and SHA-256 come from the same open file. The Windows
-provider admits native x86 and x86-64 PE applications and DLLs and rejects unsupported roles,
+provider admits native x86 and x86-64 PE applications and DLLs, and x86,
+x86-64, ARM and AArch64 ELF images, and rejects unsupported roles,
 architectures, managed images, and malformed headers. The original selected
 source coordinate is preserved for native admission.
 

@@ -345,6 +345,14 @@ export class GhidraProvider implements AnalysisProviderCandidate {
 const providerFailureText = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
 
+/** ELF machines matching the Android ABIs (x86, x86_64, armeabi-v7a, arm64-v8a). */
+const WINDOWS_P0_ELF_ARCHITECTURES: ReadonlySet<string> = new Set([
+  "x86",
+  "x86_64",
+  "arm",
+  "arm64",
+]);
+
 const inspectWindowsP0TargetSupport = (
   target: BinaryTarget,
   diagnostics: Readonly<Record<string, JsonValue>>,
@@ -352,12 +360,24 @@ const inspectWindowsP0TargetSupport = (
   // The raw 6502 lane uses the same immutable snapshot and native ownership boundary.
   if (target.format === "raw-binary" && target.architecture === "6502")
     return { status: "supported", code: null, reason: null, diagnostics };
+  // Android native libraries use Ghidra's ELF loader through the same immutable
+  // snapshot; Windows P0 still admits no database mutation for any format.
+  if (target.format === "elf")
+    return WINDOWS_P0_ELF_ARCHITECTURES.has(target.architecture)
+      ? { status: "supported", code: null, reason: null, diagnostics }
+      : {
+          status: "unsupported",
+          code: "architecture_unsupported",
+          reason:
+            "Windows Ghidra P0 accepts x86, x86-64, ARM, and AArch64 ELF targets only.",
+          diagnostics,
+        };
   if (target.format !== "pe")
     return {
       status: "unsupported",
       code: "target_format_unsupported",
       reason:
-        "Windows Ghidra P0 accepts native PE and explicitly selected raw 6502 targets only.",
+        "Windows Ghidra P0 accepts native PE, x86/ARM ELF, and explicitly selected raw 6502 targets only.",
       diagnostics,
     };
   if (target.architecture !== "x86" && target.architecture !== "x86_64")
